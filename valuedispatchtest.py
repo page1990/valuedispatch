@@ -1,32 +1,43 @@
-# -*- coding: utf-8 -*-
-import base64
-
-from six import b, u
-
 from valuedispatch import valuedispatch
 
 
-def test_singledispatch_like():
-    @valuedispatch
-    def foo(value):
-        pass
-    foo.register(1, foo)
-    foo.register(2, foo)
-    foo.dispatch(1) is foo
-    foo.dispatch(2) is foo
-    assert foo.registry[1] is foo
-    assert foo.registry[2] is foo
+def show_all():
+    print('that is in all!')
 
 
-def test_dispatch():
-    @valuedispatch
-    def encode(encoding, text):
-        return text.encode(encoding)
-    @encode.register('base32')
-    def encode_base32(encoding, text):
-        return base64.b32encode(text.encode('utf-8'))
-    assert encode('utf-8', u('Hello, world')) == b('Hello, world')
-    assert encode('utf-16', u('Hello, world')) == b('\xff\xfeH\x00e\x00l\x00l'
-                                                    '\x00o\x00,\x00 \x00w\x00o'
-                                                    '\x00r\x00l\x00d\x00')
-    assert encode('base32', u('Hello, world')) == b('JBSWY3DPFQQHO33SNRSA====')
+@valuedispatch
+def encode(encoding, *args, **kwargs):
+    print('encoding in default utf-8', args, encoding)
+    # show_all()
+
+
+@encode.register('base32')
+def encode_base32(encoding, *args, **kwargs):
+    print('encoding in base32', args, encoding)
+    # show_all()
+
+
+@encode.register('gb2312')
+def encode_gb2312(encoding, *args, **kwargs):
+    # text_value = kwargs.get('text_value', 0)
+    print('encoding in gb2312')
+    # print('text_value is', text_value)
+    # show_all()
+
+
+@encode.register('xxx')
+def encode_xxx(encoding, *args, **kwargs):
+    print('encoding in xxx', args, encoding)
+    # show_all()
+
+
+def main():
+    kwargs = {'text_value': 'ok'}
+    encode('base32', 'processed by base32')
+    encode('gb2312', 'processed by gb2312', **kwargs)
+    # encode('xxx', 'processed by xxx', **kwargs)
+    # encode('utf-8', 'processed by utf-8')
+
+
+if __name__ == "__main__":
+    main()
